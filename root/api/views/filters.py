@@ -4,7 +4,7 @@ from django_filters import rest_framework as filters
 class CategorySetFilter(filters.FilterSet):
     class Meta:
         model = Category
-        fields = ['slug', 'name']
+        fields = ['slug']
 
 
 class RecipeSetFilter(filters.FilterSet):
@@ -17,7 +17,14 @@ class RecipeSetFilter(filters.FilterSet):
 
 
 class MealSetFilter(filters.FilterSet):
-    user__name = filters.CharFilter(field_name = "user__name", lookup_expr="icontains")
+    name = filters.CharFilter(field_name = "user__name", lookup_expr="iexact")
+    email = filters.CharFilter(field_name="user__email", lookup_expr="iexact")
     class Meta:
         model = MealPlan
-        fields = ["user__name"]
+        fields = ["name", "email"]
+
+
+class UserSetFilter(filters.FilterSet):
+    class Meta:
+        model = User
+        fields = ("email", "name")

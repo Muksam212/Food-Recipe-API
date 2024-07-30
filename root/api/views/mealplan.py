@@ -7,6 +7,8 @@ from .filters import MealSetFilter
 
 from rest_framework.views import APIView
 
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+
 class MealPlanList(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -21,3 +23,9 @@ class MealPlanList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+class MealDetails(RetrieveUpdateDestroyAPIView):
+    serializer_class = MealPlanSerializer
+    queryset = MealPlan.objects.all()
+    lookup_field = "id"

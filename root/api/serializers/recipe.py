@@ -6,7 +6,8 @@ from django.db.models import Avg
 from ..serializers.review import ReviewSerializer
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many = False)
+    # author = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many = False)
+    #it will count the number
     average_rating = serializers.SerializerMethodField()
     reviews = ReviewSerializer(many = True)
     class Meta:
@@ -22,6 +23,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "average_rating",
             "reviews"
         )
+        depth = 1
 
     def get_average_rating(self, obj):
         return obj.ratings.aggregate(Avg('rating'))['rating__avg']

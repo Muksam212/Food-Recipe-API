@@ -9,8 +9,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.generics import ListAPIView
+from django.shortcuts import get_object_or_404
 
+from django_filters.rest_framework import DjangoFilterBackend
 from users.models import User
+from .filters import *
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -31,12 +34,10 @@ class UserRegistrationView(APIView):
     
 
 class UserListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
     serializer_class = UserListSerializer
-    model = User
-
-    def get_queryset(self):
-        return self.model.objects.all()
+    queryset = User.objects.all()
+    filterset_class = UserSetFilter
 
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
@@ -68,3 +69,12 @@ class UserChangePasswordView(APIView):
         serializers = UserChangePasswordSerializer(data = request.data, context = {"user":request.user})
         serializers.is_valid(raise_exception = True)
         return Response({"msg":"Password Change Successful"}, status = status.HTTP_200_OK)
+    
+
+# from rest_framework.views import APIView
+
+# class UserDelete(APIView):
+#     def post(self, request, pk = None):
+#         user = get_object_or_404(User, pk = pk)
+#         user.delete()
+#         return Response({"msg":"deleted"}, status = status.HTTP_404_NOT_FOUND)
