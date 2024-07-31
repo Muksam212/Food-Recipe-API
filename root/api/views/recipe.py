@@ -10,10 +10,11 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from ..views.filters import RecipeSetFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from root.permission import IsCookMixin, IsPlannerMixin
 
 
 
-class RecipeList(APIView):
+class RecipeList(IsPlannerMixin,APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         recipes = Recipe.objects.filter(author = self.request.user)
@@ -32,7 +33,7 @@ class RecipeList(APIView):
             return Response(serializer.data, status = status.HTTP_400_BAD_REQUEST)
         
 
-class RecipeDetails(RetrieveUpdateDestroyAPIView):
+class RecipeDetails(IsPlannerMixin,RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RecipeSerializer
     lookup_field = "id"

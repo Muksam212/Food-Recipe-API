@@ -61,6 +61,18 @@ class UserProfileView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
     
 
+
+class UserUpdateView(APIView):
+    def patch(self, request, id = None):
+        user_update = get_object_or_404(User, id = id)
+        serializer = UserRegistrationSerializer(user_update, data = request.data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"msg":"Updated Successful"}, status = status.HTTP_201_CREATED)
+        else:
+            return Response({"error":"Failed"}, status = status.HTTP_404_NOT_FOUND)
+
+
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]

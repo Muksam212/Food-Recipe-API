@@ -7,12 +7,21 @@ from root.utils import BaseModel
 from .managers import CustomUserManager
 # Create your models here.
 
+USER_TYPE = (
+    ("Admin", "Admin"),
+    ("Cook", "Cook"),
+    ("Planner", "Planner"),
+    ("Enthusiast", "Enthusiast"),
+    ("None", "None")
+)
+
 class User(AbstractBaseUser, BaseModel):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, null = True, blank = False)
     tc = models.CharField(max_length=255, null = True, blank = False)  # This is the 'tc' field
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE, default = "None", null = True, blank = False)
 
     objects = CustomUserManager()
 

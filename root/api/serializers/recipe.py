@@ -23,7 +23,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             "average_rating",
             "reviews"
         )
-        depth = 1
 
     def get_average_rating(self, obj):
         return obj.ratings.aggregate(Avg('rating'))['rating__avg']
