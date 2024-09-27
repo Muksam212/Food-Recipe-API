@@ -9,7 +9,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     # author = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many = False)
     #it will count the number
     average_rating = serializers.SerializerMethodField()
-    reviews = ReviewSerializer(many = True)
     class Meta:
         model = Recipe
         fields = (
@@ -20,9 +19,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             "instructions",
             "author",
             "category",
-            "average_rating",
-            "reviews"
+            "average_rating"
         )
 
+    #average count for rating
     def get_average_rating(self, obj):
         return obj.ratings.aggregate(Avg('rating'))['rating__avg']

@@ -4,9 +4,6 @@ from recipe.models import ShoppingList
 from rest_framework.permissions import IsAuthenticated
 
 class ShoppingList(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = ShoppingSerializer
     model = ShoppingList
-
-    def get_queryset(self):
-        return self.model.objects.all().filter(user = self.request.user)
+    queryset = ShoppingList.objects.all()

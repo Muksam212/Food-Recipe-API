@@ -47,7 +47,7 @@ class Rating(models.Model):
     rating = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.name}'s rating for {self.recipe.title}"
+        return f"{self.user.username}'s rating for {self.recipe.title}"
     
 
 class Review(models.Model):

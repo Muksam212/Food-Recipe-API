@@ -8,7 +8,7 @@ from ..serializers.users import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,14 +24,18 @@ def get_tokens_for_user(user):
     }
 
 
-class UserRegistrationView(APIView):
-    renderer_classes = [UserRenderer]
+class UserRegistrationView(CreateAPIView):
+    serializer_class = UserRegistrationSerializer
     def post(self, request, format = None):
-        serializer = UserRegistrationSerializer(data = request.data)
-        serializer.is_valid(raise_exception = True)
-        serializer.save()
-        return Response({"msg":"Registration Successful"}, status = status.HTTP_201_CREATED)
-    
+        serializer = self.serializer_class(data = request.data)
+        if serializer.is_valid(raise_exception = True):
+            user = serializer.save()
+            user_data = self.serializer_class(user).data
+
+            return Response({
+                "User":user_data, "msg":"Registration Successful"
+            }, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status = status.HTTP_404_NOT_FOUND)
 
 class UserListView(ListAPIView):
     filter_backends = [DjangoFilterBackend]
@@ -39,24 +43,29 @@ class UserListView(ListAPIView):
     queryset = User.objects.all()
     filterset_class = UserSetFilter
 
-class UserLoginView(APIView):
+class UserLoginView(CreateAPIView):
+    serializer_class = UserLoginSerializer
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
         serializer = UserLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email')
-        password = serializer.data.get('password')
-        user = authenticate(email=email, password=password)
-        if user is not None:
-            token = get_tokens_for_user(user)
-            return Response(token, status=status.HTTP_200_OK)
-        else:
-            return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_404_NOT_FOUND)
+        if serializer.is_valid(raise_exception=True):
+            username = serializer.data.get("username")
+            password = serializer.data.get("password")
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                token = get_tokens_for_user(user)
+                return Response(token, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {"detail": "username or password is not valid"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
+    def get(self, request, format=None):    
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
@@ -73,20 +82,28 @@ class UserUpdateView(APIView):
             return Response({"error":"Failed"}, status = status.HTTP_404_NOT_FOUND)
 
 
-class UserChangePasswordView(APIView):
+class UserChangePasswordView(UpdateAPIView):
+    serializer_class = UserChangePasswordSerializer
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format = None):
-        serializers = UserChangePasswordSerializer(data = request.data, context = {"user":request.user})
-        serializers.is_valid(raise_exception = True)
-        return Response({"msg":"Password Change Successful"}, status = status.HTTP_200_OK)
+    def get_object(self, queryset = None):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Return a custom response with message
+        return Response({
+            'message': 'Password has been reset successfully.'
+        }, status=status.HTTP_200_OK)
     
 
-# from rest_framework.views import APIView
-
-# class UserDelete(APIView):
-#     def post(self, request, pk = None):
-#         user = get_object_or_404(User, pk = pk)
-#         user.delete()
-#         return Response({"msg":"deleted"}, status = status.HTTP_404_NOT_FOUND)
+class UserDeleteView(DestroyAPIView):
+    serializer_class = UserProfileSerializer
+    model = User
+    lookup_field = "id"

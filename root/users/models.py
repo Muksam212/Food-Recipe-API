@@ -1,6 +1,6 @@
 from django.db import models
 
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from root.utils import BaseModel
@@ -15,28 +15,16 @@ USER_TYPE = (
     ("None", "None")
 )
 
-class User(AbstractBaseUser, BaseModel):
-    email = models.EmailField(unique=True)
-    name = models.CharField(max_length=255, null = True, blank = False)
-    tc = models.CharField(max_length=255, null = True, blank = False)  # This is the 'tc' field
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-    user_type = models.CharField(max_length=20, choices=USER_TYPE, default = "None", null = True, blank = False)
+class User(BaseModel,AbstractUser):
+    username = models.CharField(max_length=100, unique = True, null = True, blank = False)
+    email = models.EmailField(unique=True, null = True, blank = False)
+    bio = models.TextField(null = True, blank = True)
+    profile_image = models.ImageField(upload_to='profile_images/', null = True, blank = False)
+    role = models.CharField(max_length=20, choices = USER_TYPE, default = "NOne")
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'tc']
-
     def __str__(self):
-        return self.email
-
-    def has_perm(self, perm, obj=None):
-        return True
-
-    def has_module_perms(self, app_label):
-        return True
-
-    @property
-    def is_staff(self):
-        return f"{self.is_admin}"
+        return f"{self.email}"

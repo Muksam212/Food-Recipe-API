@@ -5,4 +5,3 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ("id", "user", "recipe", "rating")
-        depth = 1

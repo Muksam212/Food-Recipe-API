@@ -17,7 +17,7 @@ class RecipeSetFilter(filters.FilterSet):
 
 
 class MealSetFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name = "user__name", lookup_expr="iexact")
+    name = filters.CharFilter(field_name = "user__username", lookup_expr="iexact")
     email = filters.CharFilter(field_name="user__email", lookup_expr="iexact")
     class Meta:
         model = MealPlan
@@ -27,4 +27,4 @@ class MealSetFilter(filters.FilterSet):
 class UserSetFilter(filters.FilterSet):
     class Meta:
         model = User
-        fields = ("email", "name")
+        fields = ("username",)
